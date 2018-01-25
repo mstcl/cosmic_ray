@@ -2,5 +2,6 @@
 
 Quick setup :
 
-```git clone https://github.com/jimbrooke/CosmicRayExpt.git
+```bash
+git clone https://github.com/jimbrooke/CosmicRayExpt.git
 ```
