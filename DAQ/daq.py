@@ -2,9 +2,7 @@ import serial
 import sys
 import time
 import os
-from optparse import OptionParser
 from datetime import datetime
-from ConfigParser import ConfigParser
 import gzip
 import bz2
 import signal
@@ -25,7 +23,21 @@ class FileWriter(object):
     def writeln(self, line):
         self.file.write(line)
 
-def printout():
+def connect(serialPort="/dev/ttyUSB0"):
+
+    try:
+        port = serial.Serial(port=serialPort, baudrate=115200,
+                             bytesize=8,parity='N',stopbits=1,
+                             timeout=1,xonxoff=True)
+    except serial.SerialException, e:
+        print e.message
+        sys.exit(1)
+    print "Successfully connected to serial port"
+
+    return port
+
+
+def printout(port):
     port.write('V1\r')  # print setup in readable form
     port.write('V2\r')  # print setup in readable form
     port.write('DC\r')  # print setup in hex
@@ -38,51 +50,12 @@ def printout():
     port.write('ST 3 5\r')  # status line (manual says always run this)
     port.write('SA 1\r')  # status line (manual says always run this)
 
-
-def main():
- 
-    # set output file name
-    now = datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
-    default_filename = 'daq_' + now + '.txt.gz'
-
-    # read config file
-    parser = OptionParser()
-    parser.add_option('-o','--outfile',dest='outfile',
-                       default=default_filename,help='Path of output file')
-    parser.add_option('-c','--config',dest='cfgfile',
-                       default='daq.cfg',help='Path of config file')
-    parser.add_option('-t','--time',dest='time',
-                       default=-1,help='Time to run in seconds')
-    (options, args) = parser.parse_args(sys.argv[1:])
+def setup(port, thresh, enable, coinc, gate):
     
-    config = ConfigParser()
-    config.readfp(open(options.cfgfile))
-
-    thresh_ch0 = config.getint('daq','thresh_ch0')
-    thresh_ch1 = config.getint('daq','thresh_ch1')
-    thresh_ch2 = config.getint('daq','thresh_ch2')
-    thresh_ch3 = config.getint('daq','thresh_ch3')
-
-    coinc = config.get('daq','coincidence')
-    channels = config.get('daq','channels')
-    wc00 = int(channels,0)+(int(coinc,0)<<4)
-
-    gate = config.getint('daq','gate')
+    # setup words to write to Quarknet
     gate0 = gate & 0xff
     gate1 = (gate & 0xff00)>>8
-
-    serialPort = config.get('communication','port')
-
-
-    # connect to Quarknet board
-    try:
-        port = serial.Serial(port=serialPort, baudrate=115200,
-                             bytesize=8,parity='N',stopbits=1,
-                             timeout=1,xonxoff=True)
-    except serial.SerialException, e:
-        print e.message
-        sys.exit(1)
-    print "Successfully connected to serial port"
+    wc00 = int(enable,0)+(int(coinc,0)<<4)
 
     # print the configuration
     print 'WC 00 ' + hex(wc00)[2:] + '\r'
@@ -108,7 +81,7 @@ def main():
     port.write('WC 03 ' + hex(gate1)[2:] + '\r')
 
     # set thresholds
-    for i,thresh in enumerate([thresh_ch0, thresh_ch1, thresh_ch2, thresh_ch3]):
+    for i,value in enumerate(thresh):
         port.write('TL ' + str(i) + ' ' + str(thresh) + '\r')
         print 'TL ' + str(i) + ' ' + str(thresh) + '\r'
     
@@ -118,56 +91,67 @@ def main():
     port.write('CE\r')  # enable counters
     
     # print out some info
-    printout()
+    printout(port)
 
-    print 'Finished setting up, now recording data...'
+    print 'Finished setting up'
+
+
+def read(port, writer):
+    while port.inWaiting(): # If there is input
+        line = port.readline() # read from Quarkent
+        writer.writeln(line)   # and write to output
+
+def run(port, outfile=None, runtime=0):
+
+    # set default output file name
+    now = datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
+    default_filename = 'daq_' + now + '.txt'
+
+    if (outfile==None):
+        outfile = default_filename
 
     # Declare signal handler
     def sigHandler(signum, frame):
-        print
         print 'Signal handler called with signal', signum
+        read(port, writer)
+        printout(port)
         port.close()
+        exit()
 
     # And link SIGQUIT to it.
     signal.signal(signal.SIGINT, sigHandler)
     signal.signal(signal.SIGQUIT, sigHandler)
 
     # record data
-    writer = FileWriter(options.outfile)
+    writer = FileWriter(outfile)
 
-    if (options.time<0):
+    if (runtime==0):
         print "Going to run forever.  Hit ctrl-C to end"
         try: # Check for errors
             while True:
-                while port.inWaiting(): # If there is input
-                    line = port.readline() # read from Quarkent
-                    writer.writeln(line)   # and write to output
+                read(port, writer)
                 time.sleep(0.1)
 
-        finally: # If an error ( or signal handler is hit )
-            print "Quitting loop"
-            printout() 
+        finally: # If an error
+            print "Unknown error - ending run"
+            read(port, writer)
+            printout(port)
+            port.close()
 
     else:
-        print "Going to run for ", options.time
+        print "Going to run for ", runtime
         start = time.time()
-        trun = int(options.time)
         t = 0
         try: # Check for errors
-            while (t<trun):
-                while port.inWaiting(): # If there is input
-                    line = port.readline() # read from Quarkent
-                    writer.writeln(line)   # and write to output
+            while (t<runtime):
+                read(port, writer)
                 time.sleep(0.1)
                 t = time.time() - start
             print "Ending run"
-            printout()
 
         finally: # If an error ( or signal handler is hit )
-            print "Quitting loop"
-            printout()
+            read(port, writer)
+            printout(port)
+            port.close()
 
 
-
-if __name__ == '__main__':
-    main()
