@@ -16,7 +16,9 @@ def main():
     parser.add_option('-t','--time',dest='time',
                        default=0,help='Time to run in seconds')
     parser.add_option('-g','--gate',dest='gate',
-                       default=None,help='Gate in ns')
+                       default=None,help='Gate in units of 40ns')
+    parser.add_option('-w','--window',dest='window',
+                       default=None,help='Time window in units of 40 ns')
     parser.add_option('-c','--coincidence',dest='coinc',
                        default=None,help='Coincidence code (see manual)')
     parser.add_option('-e','--enable',dest='enable',
@@ -50,7 +52,12 @@ def main():
     if (options.gate == None) :
         gate = config.getint('daq','gate')
     else :
-        gate = options.gate
+        gate = int(options.gate)
+
+    if (options.window == None) :
+        window = config.getint('daq','window')
+    else :
+        window = int(options.window)
 
     if (options.coinc == None) :
         coinc = config.get('daq','coincidence')
@@ -82,7 +89,7 @@ def main():
     port = daq.connect()
 
     # setup the board
-    daq.setup(port, thresh, enable, coinc, gate)
+    daq.setup(port, thresh, enable, coinc, gate, window)
 
     # record the data
     daq.run(port, options.outfile, int(options.time))

@@ -38,6 +38,7 @@ def connect(serialPort="/dev/ttyUSB0"):
 
 
 def printout(port):
+    print 'Reading config\r'
     port.write('V1\r')  # print setup in readable form
     port.write('V2\r')  # print setup in readable form
     port.write('DC\r')  # print setup in hex
@@ -50,18 +51,24 @@ def printout(port):
     port.write('ST 3 5\r')  # status line (manual says always run this)
     port.write('SA 1\r')  # status line (manual says always run this)
 
-def setup(port, thresh, enable, coinc, gate):
+def setup(port, thresh, enable, coinc, gate, window):
     
     # setup words to write to Quarknet
-    gate0 = gate & 0xff
-    gate1 = (gate & 0xff00)>>8
+    wt02 = gate & 0xff
     wc00 = int(enable,0)+(int(coinc,0)<<4)
+    wc02 = window & 0xff
+    wc03 = (window & 0xff00)>>8
 
     # print the configuration
+    print 'RE\r'
+    print 'RB\r'
+    print 'CD\r'
+    print 'WT 01 00\r'
+    print 'WT 02 ' + hex(wt02)[2:] + '\r'
     print 'WC 00 ' + hex(wc00)[2:] + '\r'
     print 'WC 01 00\r'
-    print 'WC 02 ' + hex(gate0)[2:] + '\r'
-    print 'WC 03 ' + hex(gate1)[2:] + '\r'
+    print 'WC 02 ' + hex(wc02)[2:] + '\r'
+    print 'WC 03 ' + hex(wc03)[2:] + '\r'
     
     # setup Quarknet
     print 'Configuring Quarknet board'
@@ -69,16 +76,12 @@ def setup(port, thresh, enable, coinc, gate):
     port.write('RE\r')  # reset everything
     port.write('RB\r')  # reset board
     port.write('CD\r')  # disable counters during setup
-    
-    # set TMC delay
-    port.write('WT 01 00\r') # TMC delay= 2 clockticks (48 ns)
-    port.write('WT 02 02\r')
-
-    # set coincidence 
-    port.write('WC 00 ' + hex(wc00)[2:] + '\r')      # WC00 - coincidence/channels
+    port.write('WT 01 00\r')
+    port.write('WT 02 ' + hex(wt02)[2:] + '\r')
+    port.write('WC 00 ' + hex(wc00)[2:] + '\r')
     port.write('WC 01 00\r')
-    port.write('WC 02 ' + hex(gate0)[2:] + '\r')
-    port.write('WC 03 ' + hex(gate1)[2:] + '\r')
+    port.write('WC 02 ' + hex(wc02)[2:] + '\r')
+    port.write('WC 03 ' + hex(wc03)[2:] + '\r')
 
     # set thresholds
     for i,value in enumerate(thresh):
@@ -86,8 +89,7 @@ def setup(port, thresh, enable, coinc, gate):
         print 'TL ' + str(i) + ' ' + str(thresh) + '\r'
     
     # read back thresholds
-    port.write('TL\r')
-        
+    port.write('TL\r')        
     port.write('CE\r')  # enable counters
     
     # print out some info
