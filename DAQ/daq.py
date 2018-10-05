@@ -87,14 +87,14 @@ def setup(port, thresh, enable, coinc, gate, window):
     for i,value in enumerate(thresh):
         port.write('TL ' + str(i) + ' ' + str(thresh) + '\r')
         print 'TL ' + str(i) + ' ' + str(thresh) + '\r'
+
+    # print out some info
+    printout(port)
     
     # read back thresholds
     port.write('TL\r')        
     port.write('CE\r')  # enable counters
     
-    # print out some info
-    printout(port)
-
     print 'Finished setting up'
 
 
