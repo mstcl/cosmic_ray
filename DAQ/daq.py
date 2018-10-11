@@ -37,10 +37,36 @@ def connect(serialPort="/dev/ttyUSB0"):
     return port
 
 
-def printout(port):
-    print 'Reading config\r'
-    port.write('V1\r')  # print setup in readable form
-    port.write('V2\r')  # print setup in readable form
+def hardReset(port):
+    port.write('RE\r')
+    time.sleep(10)
+    port.write('RB\r')
+
+def reset(port):
+    port.write('RB\r')  # reset board
+
+def enableCounters(port):
+    port.write('CE\r')
+
+def disableCounters(port):
+    port.write('CD\r')
+    time.sleep(1)
+
+def setupReadout(port, wt02, wc00, wc02, wc03):
+    port.write('WT 01 00\r')
+    port.write('WT 02 ' + hex(wt02)[2:] + '\r')
+    port.write('WC 00 ' + hex(wc00)[2:] + '\r')
+    port.write('WC 01 00\r')
+    port.write('WC 02 ' + hex(wc02)[2:] + '\r')
+    port.write('WC 03 ' + hex(wc03)[2:] + '\r')
+
+def setThresholds(port, thresh):
+    # set thresholds
+    for i,value in enumerate(thresh):
+        port.write('TL ' + str(i) + ' ' + str(value) + '\r')
+        print 'TL ' + str(i) + ' ' + str(value) + '\r'
+
+def diagnostics(port):
     port.write('DC\r')  # print setup in hex
     port.write('DT\r')  # print setup in hex
     port.write('DG\r')  # print GPS info
@@ -50,6 +76,7 @@ def printout(port):
     port.write('TI\r')  # print timer data
     port.write('ST 3 5\r')  # status line (manual says always run this)
     port.write('SA 1\r')  # status line (manual says always run this)
+    time.sleep(1)
 
 def setup(port, thresh, enable, coinc, gate, window):
     
@@ -60,9 +87,6 @@ def setup(port, thresh, enable, coinc, gate, window):
     wc03 = (window & 0xff00)>>8
 
     # print the configuration
-    print 'RE\r'
-    print 'RB\r'
-    print 'CD\r'
     print 'WT 01 00\r'
     print 'WT 02 ' + hex(wt02)[2:] + '\r'
     print 'WC 00 ' + hex(wc00)[2:] + '\r'
@@ -72,29 +96,13 @@ def setup(port, thresh, enable, coinc, gate, window):
     
     # setup Quarknet
     print 'Configuring Quarknet board'
-    
-    port.write('RE\r')  # reset everything
-    port.write('RB\r')  # reset board
-    port.write('CD\r')  # disable counters during setup
-    port.write('WT 01 00\r')
-    port.write('WT 02 ' + hex(wt02)[2:] + '\r')
-    port.write('WC 00 ' + hex(wc00)[2:] + '\r')
-    port.write('WC 01 00\r')
-    port.write('WC 02 ' + hex(wc02)[2:] + '\r')
-    port.write('WC 03 ' + hex(wc03)[2:] + '\r')
 
-    # set thresholds
-    for i,value in enumerate(thresh):
-        port.write('TL ' + str(i) + ' ' + str(thresh) + '\r')
-        print 'TL ' + str(i) + ' ' + str(thresh) + '\r'
+    reset(port)
+    disableCounters(port)
+    setupReadout(port, wt02, wc00, wc02, wc03)
+    setThresholds(port, thresh)
+    diagnostics(port)
 
-    # print out some info
-    printout(port)
-    
-    # read back thresholds
-    port.write('TL\r')        
-    port.write('CE\r')  # enable counters
-    
     print 'Finished setting up'
 
 
@@ -103,21 +111,26 @@ def read(port, writer):
         line = port.readline() # read from Quarkent
         writer.writeln(line)   # and write to output
 
-def run(port, outfile=None, runtime=0):
-
-    # set default output file name
+def defaultFilename():
     now = datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
     default_filename = 'daq_' + now + '.txt'
+    return default_filename
+
+def endrun(port, writer):
+    disableCounters(port)
+    diagnostics(port)
+    read(port, writer)
+    port.close()
+
+def run(port, outfile=None, runtime=0):
 
     if (outfile==None):
-        outfile = default_filename
+        outfile = defaultFilename()
 
     # Declare signal handler
     def sigHandler(signum, frame):
         print 'Signal handler called with signal', signum
-        read(port, writer)
-        printout(port)
-        port.close()
+        endrun(port)
         exit()
 
     # And link SIGQUIT to it.
@@ -126,6 +139,9 @@ def run(port, outfile=None, runtime=0):
 
     # record data
     writer = FileWriter(outfile)
+
+    read(port, writer)
+    enableCounters(port)
 
     if (runtime==0):
         print "Going to run forever.  Hit ctrl-C to end"
@@ -136,9 +152,8 @@ def run(port, outfile=None, runtime=0):
 
         finally: # If an error
             print "Unknown error - ending run"
-            read(port, writer)
-            printout(port)
-            port.close()
+            disableCounters(port)
+            endrun(port, writer)
 
     else:
         print "Going to run for ", runtime
@@ -149,11 +164,11 @@ def run(port, outfile=None, runtime=0):
                 read(port, writer)
                 time.sleep(0.1)
                 t = time.time() - start
-            print "Ending run"
 
-        finally: # If an error ( or signal handler is hit )
-            read(port, writer)
-            printout(port)
-            port.close()
+        finally:
+            print "Ending run"
+            disableCounters(port)
+            endrun(port, writer)
+
 
 
