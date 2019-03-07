@@ -57,7 +57,9 @@ f = open(args.in_file)
 
 event_id = 0
 event_start = 0
-output_lines = []
+#output_lines = []
+df = pd.DataFrame(columns=["event_id", "channel", "edge", "time"])
+
 
 for line in f:
     if args.verbose:
@@ -98,18 +100,28 @@ for line in f:
                 if time_fine < 0.:
                     print("Neg time fine : ", time_fine)
                 time = time_coarse + time_fine
-                output = []
-                output.extend([event_id])
-                output.extend([chan])
-                output.extend([edge])
-                output.extend([time])
-                output_lines.append(output)
+
+                df = df.append({
+                        "event_id": event_id,
+                        "channel": chan,
+                        "edge": edge,
+                        "time": time
+                        }, ignore_index=True)
+
+#                output = []
+#                output.extend([event_id])
+#                output.extend([chan])
+#                output.extend([edge])
+#                output.extend([time])
+#                output_lines.append(output)
                 if args.verbose:
                     print("%i %i %i %10.12f"%(event_id, chan, edge, time))
 
 
-df_columns=["event_id", "channel", "edge", "time"]
-df = pd.DataFrame(data=output_lines,columns=df_columns)
+
+#df = pd.DataFrame(data=output_lines,columns=df_columns)
+
+df=df.astype({"event_id":int, "channel":int, "edge":int})
 
 df.to_csv(args.out_file, index=False)
 
