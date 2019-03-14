@@ -57,15 +57,14 @@ f = open(args.in_file)
 
 event_id = 0
 event_start = 0
-#output_lines = []
-df = pd.DataFrame(columns=["event_id", "channel", "edge", "time"])
-
+output_lines = []
+cols=["event_id", "channel", "edge", "time"]
+dfs=[]
 
 for line in f:
     if args.verbose:
         print(line)
-        print("Event : ", event_id)
-        
+
     # split the line into tokens
     fields = line.rstrip(" \t\n\r").split()
 
@@ -82,6 +81,11 @@ for line in f:
     if (new_trig):
         event_id   = event_id + 1
         event_start = trigger_count(fields)
+        if (event_id>1 and event_id%100000==0):
+            print("Event : ", event_id)
+#            dfs.append(pd.DataFrame(data=output_lines,columns=cols))
+#            output_lines=[]
+
 
     count = trigger_count(fields) - event_start
 
@@ -100,28 +104,24 @@ for line in f:
                 if time_fine < 0.:
                     print("Neg time fine : ", time_fine)
                 time = time_coarse + time_fine
+                
+                output = []
+                output.extend([event_id])
+                output.extend([chan])
+                output.extend([edge])
+                output.extend([time])
+                output_lines.append(output)
 
-                df = df.append({
-                        "event_id": event_id,
-                        "channel": chan,
-                        "edge": edge,
-                        "time": time
-                        }, ignore_index=True)
-
-#                output = []
-#                output.extend([event_id])
-#                output.extend([chan])
-#                output.extend([edge])
-#                output.extend([time])
-#                output_lines.append(output)
                 if args.verbose:
                     print("%i %i %i %10.12f"%(event_id, chan, edge, time))
 
 
+print("N events :", event_id)
 
-#df = pd.DataFrame(data=output_lines,columns=df_columns)
+df = pd.DataFrame(data=output_lines,columns=cols)
 
-df=df.astype({"event_id":int, "channel":int, "edge":int})
+#df = pd.concat(dfs, ignore_index=True)
+#df=df.astype(dtype={"event_id":int, "channel":int, "edge":int, "time":float})
 
 df.to_csv(args.out_file, index=False)
 
