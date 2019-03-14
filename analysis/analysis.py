@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 import math
 
 import argparse
-parser = argparse.ArgumentParser(description='Convert Quarknet to CSV')
+parser = argparse.ArgumentParser(description='Analyse CSV file')
 parser.add_argument("-i", "--in_file", help="input file")
 parser.add_argument("-o", "--out_file", help='output file')
+parser.add_argument("-n", "--n_max", help='max number of lines to process')
 
 args = parser.parse_args()
 
@@ -61,46 +62,52 @@ plt.clf()
 # this example just counts the number of pulses in an event and outputs a list
 
 # these variables store information about the "current" event
-current_event = 0
+current_event = 0  # always need this one !
 n_pulses_current = 0
 channels_current = []
 
+# this method collects information about the current event form multiple lines
+def updateCurrentEvent(row):
+    if (row['edge']==0):
+        n_pulses_current = n_pulses_current + 1
+        channels_current.append(row['channel'])
 
-# this variable stores the results from all events in a list
+# this method resets those variables when we start a new event
+def resetCurrentEvent(row):
+    n_pulses_current = 0
+    channels_current = []
+
+    # update the current event number
+    current_event = row['event_id']
+
+# these variables store the "summary" information
 n_pulses = []
 n_cosmics = 0
 n_cosmics_pmt1 = 0
 
-# loop over lines
-for index, row in df.iterrows():
+# this method produces summary information when we reach the end of an event
+def summariseEvent():
 
-    # check if this is a new event (ie. the event_id changed since the last line)
-    # if it is, store the current pulse count, reset the counter, and update the current event ID
+    n_pulses.append(n_pulses_current)
+    
+    # count cosmic muons
+    if ((0 in channels) and (3 in channels)):
+        n_cosmics = n_cosmics + 1
+        if (1 in channels):
+            n_cosmics_pmt1 = n_cosmics_pmt1 + 1
+
+
+# now loop over the file
+for index, row in df.iterrows():
+    if (index > args.n_max):
+        break
     if (not row['event_id']==current_event):
-        
-        # first, store the stuff we want at the end of the loop
-        n_pulses.append(n_pulses_current)
-        
-        # reset the "current event" variables
-        n_pulses_current = 0
-        channels_current = []
-        
-        # count cosmic muons
-        if ((0 in channels) and (3 in channels)):
-            n_cosmics = n_cosmics + 1
-            if (1 in channels):
-                n_cosmics_pmt1 = n_cosmics_pmt1 + 1
-        
-        # update the current event number
-        current_event = row['event_id']
+        summariseEvent(row)
+        resetCurrentEvent(row)
+    else :
+        updateCurrentEvent(row)
     
-    # check if there is a rising edge and count them
-    if (row['edge']==0):
-        n_pulses_current = n_pulses_current + 1
-        channels_current.append(row['channel'])
-        
     
-        
 # for example, make a histogram of number of edges per event
 plt.hist(n_pulses, bins=range(10))
 axes = plt.gca()
