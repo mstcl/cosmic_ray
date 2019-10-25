@@ -36,17 +36,22 @@ port = /dev/ttyUSB0
 
 [daq]
 # Threshold for each channel in mV
-enable = 0xf
 thresh_ch0 = 1000
 thresh_ch1 = 350
 thresh_ch2 = 250
 thresh_ch3 = 250
-coincidence = 0
-gate = 4
-window = 4
 
-# coincidence gate in 25MHz clock cycles (ie. 40 ns)
+# which channels are enabled
+enable = 0xf
+
+# trigger coincidence (0 - singles, 1 - double, 2 - triple, 3 - quadruple)
+coincidence = 0
+
+# trigger coincidence window
 gate = 4
+
+# readout window
+window = 10
 ```
 
 The threshold fields should be self explanatory.  The ‘coincidence’ field sets how many channels are required to pulse in coincidence in order to readout (0 means 1-fold coincidence, 1 means 2-fold, etc.).  The ‘gate’ field is the time window in which coincidence is required, in units of 40ns.  Whenever the coincidence requirements are satisfied, data is recorded.  The ‘window’ field sets controls the period of data that is readout for each coincidence.  Finally, the ‘enable’ field is a hexadecimal digit that sets whether each channel is enabled, with one bit per channel.  (eg. 0xf all channels active, 0x1 enables channel 0, 0x5 enables channels 0 and 2, etc.).  See p33 of the Quarknet manual or more information on the readout board setup.
