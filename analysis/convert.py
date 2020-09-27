@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 # constants
-freq = 25.0e6
-clock_LSB = 40.
+clock_LSB = 10.
 tmc_LSB = clock_LSB/8.
 
 first_count=0
