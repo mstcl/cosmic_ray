@@ -3,14 +3,15 @@
 # Including some examples of how to use DataFrames from pandas
 #
 # Usage :
-# python analysis2.py -i test.csv
+# python analysis.py -i test.dat
 
+import pickle
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import math
-
 import argparse
+
+from event import Event, Pulse
+
 parser = argparse.ArgumentParser(description='Analyse CSV file')
 parser.add_argument("-i", "--in_file", help="input file")
 parser.add_argument("-o", "--out_file", help='output file')
@@ -19,102 +20,69 @@ parser.add_argument("-n", "--n_max", help='max number of lines to process')
 args = parser.parse_args()
 
 # open the file
-df = pd.read_csv(args.in_file)
+ifile = open(args.in_file, 'rb')
+events= pickle.load(ifile)
+n_events= len(events)
 
-# iterate over the rows in the file, for example counting the number of rising edges in channel 0
-n_edge = 0
-for index, row in df.iterrows():
-    if (row['channel']==0 and row['edge']==0):
-        n_edge = n_edge + 1
+print("Read {} events from file".format(n_events))
 
-print(n_edge)
+# example event loop
+count = [0, 0, 0, 0]  # counts per channel
 
-# a more sophisticated way to do the same thing using DataFrame functions
-n_edge2 = len(df.loc[(df['channel']==0) & (df['edge']==0)])
-print(n_edge2)
+for event in events:
+    for pulse in event.pulses:
+        # only count rising edges
+        if pulse.edge == 0:
+            count[pulse.chan] += 1
 
-# calculate the rate of rising edges in all channels and make a plot
-time = 10.
-channels = [0, 1, 2, 3]
-rates = []
-errors = []
-for chan in channels:
-    n = len(df.loc[(df['channel']==chan) & (df['edge']==0)])
-    r = n/time
-    er = math.sqrt(n)/time
-    rates.append(r)
-    errors.append(er)
+print("Counts by channel")
+print("Channel 0 : {} ".format(count[0]))
+print("Channel 1 : {} ".format(count[1]))
+print("Channel 2 : {} ".format(count[2]))
+print("Channel 3 : {} ".format(count[3]))
 
-plt.errorbar(channels,rates, yerr=errors, fmt='o')
-plt.xlabel('channel #')
-plt.ylabel('rate (Hz)')
-axes = plt.gca()
-axes.set_xlim([-0.1,3.1])
+# now find concidences betwen two channels (0 and 1)
+n_coinc = 0
+for event in events:
+    found0 = False
+    found1 = False
+    for pulse in event.pulses:
+        # only count rising edges
+        if pulse.edge==0 and pulse.chan == 0:
+            found0 = True
+        if pulse.edge==0 and pulse.chan == 1:
+            found1 = True
+    if found0 and found1:
+        n_coinc += 1
+            
+print("N (0,1) coincidences : {}".format(n_coinc))
 
-plt.savefig("rates.png")
-#plt.show()
+# get some pulse time information
+dts = []
+for event in events:
+    found0 = False
+    found1 = False
+    time0 = 0.
+    time1 = 0.
+    for pulse in event.pulses:
+        # only count rising edges
+        if pulse.edge==0 and pulse.chan == 0:
+            found0 = True
+            time0 = pulse.time
+        if pulse.edge==0 and pulse.chan == 1:
+            found1 = True
+            time1 = pulse.time
+    if found0 and found1:
+        dts.append(abs(time1-time0))
 
-# clear the plot
-plt.clf()
+# print some summary info
+print("Mean delta-t : {}".format(np.mean(dts)))
+print("Std dev delta-t : {}".format(np.std(dts)))
 
-
-# example of how to handle events which cross multiple lines
-# this example just counts the number of pulses in an event and outputs a list
-
-# these variables store information about the "current" event
-current_event = 0  # always need this one !
-n_pulses_current = 0
-channels_current = []
-
-# this method collects information about the current event form multiple lines
-def updateCurrentEvent(row):
-    if (row['edge']==0):
-        n_pulses_current = n_pulses_current + 1
-        channels_current.append(row['channel'])
-
-# this method resets those variables when we start a new event
-def resetCurrentEvent(row):
-    n_pulses_current = 0
-    channels_current = []
-
-    # update the current event number
-    current_event = row['event_id']
-
-# these variables store the "summary" information
-n_pulses = []
-n_cosmics = 0
-n_cosmics_pmt1 = 0
-
-# this method produces summary information when we reach the end of an event
-def summariseEvent():
-
-    n_pulses.append(n_pulses_current)
-    
-    # count cosmic muons
-    if ((0 in channels) and (3 in channels)):
-        n_cosmics = n_cosmics + 1
-        if (1 in channels):
-            n_cosmics_pmt1 = n_cosmics_pmt1 + 1
-
-
-# now loop over the file
-for index, row in df.iterrows():
-    if (index > args.n_max):
-        break
-    if (not row['event_id']==current_event):
-        summariseEvent(row)
-        resetCurrentEvent(row)
-    else :
-        updateCurrentEvent(row)
-    
-    
-# for example, make a histogram of number of edges per event
-plt.hist(n_pulses, bins=range(10))
-axes = plt.gca()
-axes.set_ylim([0.0, 15.0])
-plt.savefig("edges_per_event.png")
+bins = np.linspace(0.,2000., 100)
+plt.hist(dts, bins)
+plt.yscale('log')
+plt.ylabel("N")
+plt.xlabel(r'$\Delta t$')
 plt.show()
-
-
-
 
