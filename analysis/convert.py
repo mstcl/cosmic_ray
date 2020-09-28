@@ -7,16 +7,17 @@ import sys
 import gzip
 import bz2
 import numpy as np
-import pandas as pd
+
+from event import Event, Pulse
 
 # constants
 freq = 25.0e6
-clock_LSB = 40.
+clock_LSB = 10.
 tmc_LSB = clock_LSB/8.
 
 first_count=0
 
-# fucntion to skip header lines
+# function to skip header lines
 def read_headers():
     for line, i in zip(f, range(n_header_lines)):
         if args.verbose:
@@ -56,10 +57,9 @@ args = parser.parse_args()
 f = open(args.in_file)
 
 event_id = 0
-event_start = 0
-output_lines = []
-cols=["event_id", "channel", "edge", "time"]
-dfs=[]
+current_event = Event(0)
+events = []
+
 
 for line in f:
     if args.verbose:
@@ -76,18 +76,18 @@ for line in f:
     new_trig = new_trigger(fields)
 
     if (event_id==0):
-        event_start = trigger_count(fields)
+        current_event.trigger = trigger_count(fields)
 
     if (new_trig):
         event_id   = event_id + 1
-        event_start = trigger_count(fields)
         if (event_id>1 and event_id%100000==0):
             print("Event : ", event_id)
-#            dfs.append(pd.DataFrame(data=output_lines,columns=cols))
-#            output_lines=[]
+        
+        events.append(current_event)
+        current_event = Event(event_id)
+        current_event.trigger = trigger_count(fields)
 
-
-    count = trigger_count(fields) - event_start
+    count = trigger_count(fields) - current_event.trigger
 
     # loop over channels and edges
     for chan in range(4):
@@ -105,24 +105,18 @@ for line in f:
                     print("Neg time fine : ", time_fine)
                 time = time_coarse + time_fine
                 
-                output = []
-                output.extend([event_id])
-                output.extend([chan])
-                output.extend([edge])
-                output.extend([time])
-                output_lines.append(output)
+                pulse = Pulse(chan, edge, time)
+                current_event.pulses.append(pulse)
 
                 if args.verbose:
                     print("%i %i %i %10.12f"%(event_id, chan, edge, time))
 
 
-print("N events :", event_id)
 
-df = pd.DataFrame(data=output_lines,columns=cols)
+print("N events found :", event_id)
 
-#df = pd.concat(dfs, ignore_index=True)
-#df=df.astype(dtype={"event_id":int, "channel":int, "edge":int, "time":float})
+import pickle
+ofile = open(args.out_file, 'wb') 
+pickle.dump(events, ofile)
 
-df.to_csv(args.out_file, index=False)
-
-
+print("N events stored :", len(events))
