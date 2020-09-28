@@ -11,7 +11,6 @@ import numpy as np
 from event import Event, Pulse
 
 # constants
-freq = 25.0e6
 clock_LSB = 10.
 tmc_LSB = clock_LSB/8.
 
