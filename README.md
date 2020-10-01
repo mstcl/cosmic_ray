@@ -4,6 +4,8 @@
 
 ```bash
 git clone https://github.com/jimbrooke/CosmicRayExpt.git
+cd CosmicRayExpt
+source setup.sh
 ```
 
 ## Data Acquisition code
@@ -15,7 +17,7 @@ This is a python library of routines to control the hardware and record data.  I
 ### main.py
 This is an example program, that uses functions from daq.py to setup the Quarknet board, and record data, and provides a command line interface.  You can run it using :
 ```bash
-python main.py -t 10
+acquire.py -t 10
 ```
 Where the number after the ‘-t’ flag is the number of seconds to record data.  (If you do not supply the -t flag, the program will run forever, or until you press ctrl-C.  However, this more of operation is not recommended).  You can also enable different channels, set thresholds, coincidence requirements via the command line.  For more information, type
 python main.py -h
@@ -24,7 +26,7 @@ Note that you can set the output file by using the ‘–o’ option.  By defaul
 
 It is also worth noting that the program can be run with the following command, which will leave the program running in the background, even after you log out.
 ```bash
-nohup python main.py >& log.txt &
+nohup acquire main.py >& log.txt &
 ```
 (The “>& log.txt” notation sends any printout from daq.py to the file log.txt).
 
@@ -47,10 +49,10 @@ enable = 0xf
 # trigger coincidence (0 - singles, 1 - double, 2 - triple, 3 - quadruple)
 coincidence = 0
 
-# trigger coincidence window
+# trigger coincidence window (in 10ns units)
 gate = 4
 
-# readout window
+# readout window (in 10ns units)
 window = 10
 ```
 
@@ -67,12 +69,12 @@ Analysis code is stored in the analysis folder
 ### convert.py
 The first simply converts the Quarknet output file format to CSV (comma-separated value). To run this, use :
 ```bash
-python convert.py –i input_file.txt –o output_file.csv 
+convert.py –i input_file.txt –o data.dat 
 ```
 Like the data acquisition program, in principle you should not need to make any changes to this program.
 
 ### analysis.py
 An example analysis program is provided, that calculates the rate of events in each channel.  It also includes some example functions to select events of different types.  To run it, use :
 ```bash
-python analysis.py –i input_file.csv
+python analysis.py –i data.dat
 ```
