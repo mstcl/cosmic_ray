@@ -5,7 +5,9 @@
 #  bash run_all.sh
 #
 
-python main.py -t 10 -c daq1.cfg -o daq_1_10.txt.gz
-python main.py -t 10 -c daq2.cfg -o daq_2_10.txt.gz
-python main.py -t 10 -c daq3.cfg -o daq_3_10.txt.gz
-python main.py -t 10 -c daq4.cfg -o daq_4_10.txt.gz
+acquire.py -t 100 -o thresh100.txt -0 100 -1 100 -2 100 -3 100
+acquire.py -t 100 -o thresh200.txt -0 200 -1 200 -2 200 -3 200
+acquire.py -t 100 -o thresh300.txt -0 300 -1 300 -2 300 -3 300
+acquire.py -t 100 -o thresh400.txt -0 400 -1 400 -2 400 -3 400
+acquire.py -t 100 -o thresh500.txt -0 500 -1 500 -2 500 -3 500
+acquire.py -t 100 -o thresh600.txt -0 600 -1 600 -2 600 -3 600
