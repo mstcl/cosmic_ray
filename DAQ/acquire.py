@@ -3,6 +3,7 @@
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 import sys
+import os
 
 import daq
 
@@ -13,7 +14,7 @@ def main():
     parser.add_option('-o','--outfile',dest='outfile',
                        default=None,help='Path of output file')
     parser.add_option('-s','--setup',dest='cfgfile',
-                       default='daq.cfg',help='Path of config file')
+                       default=os.getenv('CR_BASE')+'/DAQ/daq.cfg',help='Path of config file')
     parser.add_option('-t','--time',dest='time',
                        default=0,help='Time to run in seconds')
     parser.add_option('-g','--gate',dest='gate',
