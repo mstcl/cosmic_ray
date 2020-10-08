@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 # data analysis example program
 # Including some examples of how to use DataFrames from pandas
@@ -18,6 +19,8 @@ parser.add_argument("-o", "--out_file", help='output file')
 parser.add_argument("-n", "--n_max", help='max number of lines to process')
 
 args = parser.parse_args()
+
+print("Starting analysis")
 
 # open the file
 ifile = open(args.in_file, 'rb')
