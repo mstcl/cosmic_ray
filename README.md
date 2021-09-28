@@ -28,13 +28,15 @@ This is an example program, that uses functions from daq.py to setup the Quarkne
 acquire.py -t 10
 ```
 Where the number after the ‘-t’ flag is the number of seconds to record data.  (If you do not supply the -t flag, the program will run forever, or until you press ctrl-C.  However, this more of operation is not recommended).  You can also enable different channels, set thresholds, coincidence requirements via the command line.  For more information, type
-python main.py -h
+```bash
+acquire.py -h
+```
 
 Note that you can set the output file by using the ‘–o’ option.  By default, the program will run continuously and write to a filename based on the timestamp.
 
 It is also worth noting that the program can be run with the following command, which will leave the program running in the background, even after you log out.
 ```bash
-nohup acquire main.py >& log.txt &
+nohup acquire.py >& log.txt &
 ```
 (The “>& log.txt” notation sends any printout from daq.py to the file log.txt).
 
@@ -90,13 +92,15 @@ convert_all.py
 ### analysis.py
 An example analysis program is provided, that calculates the rate of events in each channel.  It also includes some example functions to select events of different types.  To run it, use :
 ```bash
-python analysis.py –i data.pkl
+analysis.py –i data.pkl
 ```
 
-Note that this is an EXAMPLE program.  It is not recommended that you use this file for your analysis direclty.  Better is to create a new file; ideally one for each new analysis task.  You can either start from a blank slate, or copy analysis.py to a new file.  For example :
+Note that this is an EXAMPLE program.  It is not recommended that you use this file for your analysis directly.  Better is to create a new file for each new analysis task.  You can either start from a blank slate, or copy analysis.py to a new file like this :
 ```bash
-cp $CR_BASE/analysis/analysis.py $CR_BASE/analysis/myanalysis.py
+cp $CR_BASE/analysis/analysis.py myanalysis.py
+```
+
+Then edit myanalysis.py, before running it :
+```bash
 myanalysis.py -i data.pkl
 ```
-
-You can either start completely afresh, and use this as inspiration.  copy this to a new program and edit it
