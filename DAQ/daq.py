@@ -82,7 +82,7 @@ def setup(port, thresh, enable, coinc, gate, window):
     
     # setup words to write to Quarknet
     wt02 = gate & 0xff
-    wc00 = int(enable,0)+(int(coinc,0)<<4)
+    wc00 = enable+(coinc<<4)
     wc02 = window & 0xff
     wc03 = (window & 0xff00)>>8
 

@@ -14,7 +14,7 @@ def main():
     parser.add_option('-o','--outfile',dest='outfile',
                        default=None,help='Path of output file')
     parser.add_option('-s','--setup',dest='cfgfile',
-                       default=os.getenv('CR_BASE')+'/DAQ/daq.cfg',help='Path of config file')
+                       default='daq.cfg',help='Path of config file')
     parser.add_option('-t','--time',dest='time',
                        default=0,help='Time to run in seconds')
     parser.add_option('-g','--gate',dest='gate',
@@ -41,15 +41,10 @@ def main():
 
     serialPort = config.get('communication','port')
 
-#    if (options.time == None) :
-#        time = config.getint('daq','time')
-#    else :
-#        time = None
-
     if (options.enable == None) :
-        enable = config.get('daq','enable')
+        enable = config.getint('daq','enable')
     else :
-        enable = options.time
+        enable = int(options.enable,16)
 
     if (options.gate == None) :
         gate = config.getint('daq','gate')
@@ -62,30 +57,30 @@ def main():
         window = int(options.window)
 
     if (options.coinc == None) :
-        coinc = config.get('daq','coincidence')
+        coinc = config.getint('daq','coincidence')
     else :
-        coinc = options.coinc
+        coinc = int(options.coinc)
 
     thresh = [0,0,0,0]
     if (options.thresh_ch0 == None) :
         thresh[0] = config.getint('daq','thresh_ch0')
     else :
-        thresh[0] = options.thresh_ch0
+        thresh[0] = int(options.thresh_ch0)
 
     if (options.thresh_ch1 == None) :
         thresh[1] = config.getint('daq','thresh_ch1')
     else :
-        thresh[1] = options.thresh_ch1
+        thresh[1] = int(options.thresh_ch1)
 
     if (options.thresh_ch2 == None) :
         thresh[2] = config.getint('daq','thresh_ch2')
     else :
-        thresh[2] = options.thresh_ch2
+        thresh[2] = int(options.thresh_ch2)
 
     if (options.thresh_ch3 == None) :
         thresh[3] = config.getint('daq','thresh_ch3')
     else :
-        thresh[3] = options.thresh_ch3        
+        thresh[3] = int(options.thresh_ch3)   
 
     # connect to the hardware
     port = daq.connect()
@@ -95,7 +90,6 @@ def main():
 
     # record the data
     daq.run(port, options.outfile, int(options.time))
-
 
 
 if __name__ == '__main__':
