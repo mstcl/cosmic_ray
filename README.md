@@ -8,6 +8,14 @@ cd CosmicRayExpt
 source setup.sh
 ```
 
+It is highly recommended that you create a separate subdirectories for each data collection task, to organise your data (and results).  For example : 
+```
+mkdir data
+cd data
+```
+
+You will then be able to run the commands below from the 'data' directory, to collect data and analyse it 
+
 ## Data Acquisition code
 Code to setup the Quarknet board and record data can be found under the DAQ folder.
 
