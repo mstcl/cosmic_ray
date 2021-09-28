@@ -8,6 +8,14 @@ cd CosmicRayExpt
 source setup.sh
 ```
 
+It is highly recommended that you create a separate subdirectories for each data collection task, to organise your data (and results).  For example : 
+```bash
+mkdir data
+cd data
+```
+
+You will then be able to run the commands below from the 'data' directory, to collect data and analyse it 
+
 ## Data Acquisition code
 Code to setup the Quarknet board and record data can be found under the DAQ folder.
 
@@ -69,12 +77,26 @@ Analysis code is stored in the analysis folder
 ### convert.py
 The first simply converts the Quarknet output file format to CSV (comma-separated value). To run this, use :
 ```bash
-convert.py –i input_file.txt –o data.dat 
+convert.py –i input_file.txt –o data.pkl 
 ```
 Like the data acquisition program, in principle you should not need to make any changes to this program.
+
+### convert_all.py
+This will find all the .txt files in the current directory, and run the command above to convert them to .pkl files.
+```bash
+convert_all.py 
+```
 
 ### analysis.py
 An example analysis program is provided, that calculates the rate of events in each channel.  It also includes some example functions to select events of different types.  To run it, use :
 ```bash
-python analysis.py –i data.dat
+python analysis.py –i data.pkl
 ```
+
+Note that this is an EXAMPLE program.  It is not recommended that you use this file for your analysis direclty.  Better is to create a new file; ideally one for each new analysis task.  You can either start from a blank slate, or copy analysis.py to a new file.  For example :
+```bash
+cp $CR_BASE/analysis/analysis.py $CR_BASE/analysis/myanalysis.py
+myanalysis.py -i data.pkl
+```
+
+You can either start completely afresh, and use this as inspiration.  copy this to a new program and edit it
