@@ -95,10 +95,12 @@ An example analysis program is provided, that calculates the rate of events in e
 analysis.py –i data.pkl
 ```
 
-Note that this is an EXAMPLE program.  It is not recommended that you use this file for your analysis direclty.  Better is to create a new file; ideally one for each new analysis task.  You can either start from a blank slate, or copy analysis.py to a new file.  For example :
+Note that this is an EXAMPLE program.  It is not recommended that you use this file for your analysis directly.  Better is to create a new file for each new analysis task.  You can either start from a blank slate, or copy analysis.py to a new file like this :
 ```bash
-cp $CR_BASE/analysis/analysis.py $CR_BASE/analysis/myanalysis.py
-myanalysis.py -i data.pkl
+cp $CR_BASE/analysis/analysis.py myanalysis.py
 ```
 
-You can either start completely afresh, and use this as inspiration.  copy this to a new program and edit it
+Then edit myanalysis.py, before running it :
+```bash
+myanalysis.py -i data.pkl
+```
