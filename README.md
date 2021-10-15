@@ -104,3 +104,9 @@ Then edit myanalysis.py, before running it :
 ```bash
 myanalysis.py -i data.pkl
 ```
+
+### Example Analysis.ipynb
+
+This is an example of how to do analysis in a Jupyter notebook.  It performs the same tasks as analysis.py but loading files is slightly different.  The intention is that you can copy this notebook to a PC/Mac running Anaconda Python 3, and do all your analysis there.  You should ensure there is a copy of the analysis directory on the machine you are using, since the notebook relies on the event.py and sample.pkl files.
+
+In order to analyse your own data, create a new directory (in the directoy that contains 'analysis'), copy your data to it, and Example Analysis.ipynb, and you are ready to start editing.
