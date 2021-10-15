@@ -25,6 +25,8 @@ def main():
                        default=None,help='Coincidence code (see manual)')
     parser.add_option('-e','--enable',dest='enable',
                        default=None,help='Channel enable code (see manual)')
+    parser.add_option('-d','--debug',dest='debug',action="store_true",
+                       default=False,help='Debug mode (do not touch hardware)')
     parser.add_option('-0','--threshold-ch0',dest='thresh_ch0',
                        default=None,help='Threshold channel 0')
     parser.add_option('-1','--threshold-ch1',dest='thresh_ch1',
@@ -35,6 +37,8 @@ def main():
                        default=None,help='Threshold channel 3')
     (options, args) = parser.parse_args(sys.argv[1:])
 
+    print(options.debug)
+
     # get default options from config file where not set at command line
     config = ConfigParser()
     config.readfp(open(options.cfgfile))
@@ -42,7 +46,7 @@ def main():
     serialPort = config.get('communication','port')
 
     if (options.enable == None) :
-        enable = config.getint('daq','enable')
+        enable = int(config.get('daq','enable'),16)
     else :
         enable = int(options.enable,16)
 
@@ -82,14 +86,21 @@ def main():
     else :
         thresh[3] = int(options.thresh_ch3)   
 
-    # connect to the hardware
-    port = daq.connect()
-
-    # setup the board
-    daq.setup(port, thresh, enable, coinc, gate, window)
-
-    # record the data
-    daq.run(port, options.outfile, int(options.time))
+    if (options.debug):
+        print("Enable : {}".format(enable))
+        print("Coinc  : {}".format(coinc))
+        print("Gate   : {}".format(gate))
+        print("Window : {}".format(window))
+        print("Thresh : {}".format(thresh))
+    else :
+        # connect to the hardware
+        port = daq.connect()
+        
+        # setup the board
+        daq.setup(port, thresh, enable, coinc, gate, window)
+        
+        # record the data
+        daq.run(port, options.outfile, int(options.time))
 
 
 if __name__ == '__main__':
