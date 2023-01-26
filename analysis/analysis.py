@@ -82,7 +82,7 @@ for event in events:
 print("Mean delta-t : {}".format(np.mean(dts)))
 print("Std dev delta-t : {}".format(np.std(dts)))
 
-bins = np.linspace(0.,2000., 100)
+bins = np.linspace(0.,20., 100)
 plt.hist(dts, bins)
 plt.yscale('log')
 plt.ylabel("N")
