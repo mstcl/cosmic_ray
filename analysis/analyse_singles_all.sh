@@ -3,7 +3,7 @@
 max=7
 for i in `seq 2 $max`
 do
-    touch "${i}.txt"
+    touch "${i}"
 done
 
 for f in *.dat

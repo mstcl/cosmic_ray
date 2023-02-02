@@ -37,5 +37,5 @@ for event in events:
             count[pulse.chan] += 1
 
 
-with open("{}.txt".format(channel), "a") as data:
+with open("{}".format(channel), "a") as data:
     data.writelines("{}\t{}\n".format(volt, count[channel]))
