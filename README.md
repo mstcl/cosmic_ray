@@ -1,3 +1,27 @@
+# Relevant part:
+_Date: 2023-13-02_
+
+Remember to source the sauce with:
+
+```source code/cosmic_ray/setup.sh```
+
+Make a new directory for this run
+
+```
+   cd data
+   mkdir -p T1458-C1
+   cd T1458-C1
+   ln -s $HOME/code/cosmic_ray/DAQ/daq.cfg .
+```
+
+Check & modify `daq.cfg` to make sure parameters are correct
+
+Perform run
+
+```run_coincidence.sh```
+
+
+
 # CosmicRayExpt
 
 ## Quick setup :
