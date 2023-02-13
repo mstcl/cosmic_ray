@@ -18,7 +18,14 @@ Check & modify `daq.cfg` to make sure parameters are correct
 
 Perform run
 
-```run_coincidence.sh```
+```nohup run_coincidence.sh >& log &```
+
+Check run is going and hasn't stopped due to errors
+
+```
+   cat log
+   ps -ef | grep run_coincidence.sh
+```
 
 
 
