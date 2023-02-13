@@ -8,6 +8,6 @@ length=500    # run time in seconds
 
 while [ $i -le $f ]
 do
-    acquire.py -o t1458-c1-${i} -t ${length} -s "daq.cg"
+    acquire.py -o "t1458-c1-${i}.txt" -t ${length} -s "daq.cfg"
     i=$((i+1))
 done
