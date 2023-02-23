@@ -20,7 +20,6 @@ parser.add_argument("-n", "--n_max", help='max number of lines to process')
 
 args = parser.parse_args()
 
-print("Starting analysis")
 
 # open the file
 ifile = open(args.in_file, 'rb')
@@ -78,10 +77,14 @@ def efficiency(baseline,together):
     eff=together/baseline
     return eff
 
-C0f=open("C0-eff.txt","a")
-C1f=open("C1-eff.txt","a")
-C2f=open("C2-eff.txt","a")
-C3f=open("C3-eff.txt","a")
+#C0f=open("C0-eff.txt","a")
+#C1f=open("C1-eff.txt","a")
+#C2f=open("C2-eff.txt","a")
+#C3f=open("C3-eff.txt","a")
+C0=open("C0.txt","a")
+C1=open("C1.txt","a")
+C2=open("C2.txt","a")
+C3=open("C3.txt","a")
 
 #NOTATION: obtained-o_baseline-b e.g. c1o_c2c3b
 #NOTATION: coincidence-b e.g. c2c3b
@@ -94,21 +97,28 @@ c1c3b,c0o_c1c3b,c2o_c1c3b=calculate_efficiency(1,3,0,2)
 c2c3b,c0o_c2c3b,c1o_c2c3b=calculate_efficiency(2,3,0,1)
 
 #C0 baselines: 1,2  1,3  2,3
-C0f.writelines("{}\t{}\t{}\n".format(efficiency(c1c2b,c0o_c1c2b),efficiency(c1c3b,c0o_c1c3b),efficiency(c2c3b,c0o_c2c3b)))
-C0f.close()
+#C0f.writelines("{}\t{}\t{}\n".format(efficiency(c1c2b,c0o_c1c2b),efficiency(c1c3b,c0o_c1c3b),efficiency(c2c3b,c0o_c2c3b)))
+#C0f.close()
+C0.writelines("{}\t{}\t{}\t{}\n".format(c0o_c1c2b,c0o_c1c3b,c0o_c2c3b,int(c1c2b)+int(c1c3b)+int(c2c3b)))
+C0.close()
 
 #C1 baselines: 0,2  0,3  2,3
-C1f.writelines("{}\t{}\t{}\n".format(efficiency(c0c2b,c1o_c0c2b),efficiency(c0c3b,c1o_c0c3b),efficiency(c2c3b,c1o_c2c3b)))
-C1f.close()
+#C1f.writelines("{}\t{}\t{}\n".format(efficiency(c0c2b,c1o_c0c2b),efficiency(c0c3b,c1o_c0c3b),efficiency(c2c3b,c1o_c2c3b)))
+#C1f.close()
+C1.writelines("{}\t{}\t{}\t{}\n".format(c1o_c0c2b,c1o_c0c3b,c1o_c2c3b,int(c0c2b)+int(c0c3b)+int(c2c3b)))
+C1.close()
 
 #C2 baselines: 0,1  0,3  1,3
-C2f.writelines("{}\t{}\t{}\n".format(efficiency(c0c1b,c2o_c0c1b),efficiency(c0c3b,c2o_c0c3b),efficiency(c1c3b,c2o_c1c3b)))
-C2f.close()
+#C2f.writelines("{}\t{}\t{}\n".format(efficiency(c0c1b,c2o_c0c1b),efficiency(c0c3b,c2o_c0c3b),efficiency(c1c3b,c2o_c1c3b)))
+#C2f.close()
+C2.writelines("{}\t{}\t{}\t{}\n".format(c2o_c0c1b,c2o_c0c3b,c2o_c1c3b,int(c0c1b)+int(c0c3b)+int(c1c3b)))
+C2.close()
 
 #C3 baselines: 0,1  0,2  1,2
-C3f.writelines("{}\t{}\t{}\n".format(efficiency(c0c1b,c3o_c0c1b),efficiency(c0c2b,c3o_c0c2b),efficiency(c1c2b,c3o_c1c2b)))
-C3f.close()
-
+#C3f.writelines("{}\t{}\t{}\n".format(efficiency(c0c1b,c3o_c0c1b),efficiency(c0c2b,c3o_c0c2b),efficiency(c1c2b,c3o_c1c2b)))
+#C3f.close()
+C3.writelines("{}\t{}\t{}\t{}\n".format(c3o_c0c1b,c3o_c0c2b,c3o_c1c2b,int(c0c1b)+int(c0c2b)+int(c1c2b)))
+C3.close()
 
   
 #n_0_1, n_coinc_1, n_coinc_2 = calculate_efficiency(0,1,2,3)
