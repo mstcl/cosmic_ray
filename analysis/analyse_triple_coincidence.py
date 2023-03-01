@@ -26,6 +26,11 @@ n_events= len(events)
 
 
 def calculate_efficiency(trig_1, trig_2, trig_3, target_1):
+'''
+Function takes a baseline of three channels (trig_1, trig_2, trig_3) and the fourth channel as the "target" (target_1);
+Computes triple coincidence in the baseline and quadruple coincidence for the baseline and target;
+Returns the number of coincidences for the aforementioned values.
+'''
     n_coinc = 0
     n_coinc_1 = 0
     for event in events:
@@ -50,22 +55,28 @@ def calculate_efficiency(trig_1, trig_2, trig_3, target_1):
 
 
 def efficiency(baseline,together):
+'''
+Computes efficiency by dividing the number of coincidences found "together" (baseline+target) by the number of coincidences found in the baseline.
+'''
     baseline=float(baseline)
     together=float(together)
     eff=together/baseline
     return eff
 
-
+#opens text files in which the efficiencies will be stored
 C0f=open("C0-eff-2.txt","a")
 C1f=open("C1-eff-2.txt","a")
 C2f=open("C2-eff-2.txt","a")
 C3f=open("C3-eff-2.txt","a")
 
+#obtains coincidence values for each permutation
+#notation is as follows: c represents channel, and is followed by the channel's number; b at the end delegates the current baseline permutation; o represents the channel whose efficiency is being measured
 c0c1c2b,c3o=calculate_efficiency(0,1,2,3)
 c0c1c3b,c2o=calculate_efficiency(0,1,3,2)
 c0c2c3b,c1o=calculate_efficiency(0,2,3,1)
 c1c2c3b,c0o=calculate_efficiency(1,2,3,0)
 
+#efficiencies for a particular run are appended to the opened files; the files are subsequently closed
 C0f.writelines("{}\n".format(efficiency(c1c2c3b,c0o)))
 C0f.close()
 
