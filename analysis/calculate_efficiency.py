@@ -64,6 +64,28 @@ def c2():
             print "Variance of each baseline for T{}".format(tubes[idx]), indiv_var
    
 
+def c2_2():
+    tubes = [1,4,5,8]
+    chans = [0,1,2,3]
+    for chan, idx in enumerate(chans):
+        with open("C{}-eff.txt".format(chan), "r") as data:
+            tab = np.array([list(map(float,line.strip("\n").split("\t"))) for line in data.readlines()])
+            print "Saving channel", chan
+            tab = tab.T
+            plt.errorbar(np.array([n+1 for n in range(np.size(tab[0]))]), tab[0], yerr=tab[1])
+            plt.legend()
+            plt.ylabel("Efficiency")
+            plt.xlabel("Run ID")
+            plt.title("T{} efficiency".format(tubes[idx]))
+            plt.savefig("{}.png".format(tubes[idx]))
+            plt.cla()
+            plt.clf()
+            plt.close()
+            indiv_mean = np.mean(tab[0])
+            indiv_var = np.mean(tab[[1])
+            print "Average efficiency for T{}".format(tubes[idx]), indiv_mean
+            print "Average error in efficiency for T{}".format(tubes[idx]), indiv_var
+
 
 if __name__ == "__main__":
     c2()
