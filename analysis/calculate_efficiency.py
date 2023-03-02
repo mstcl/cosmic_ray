@@ -86,6 +86,24 @@ def c2_2():
             print "Average efficiency for T{}".format(tubes[idx]), indiv_mean
             print "Average error in efficiency for T{}".format(tubes[idx]), indiv_var
 
+				    
+def c2_3():
+    tubes = [1,4,5,8]
+    chans = [0,1,2,3]
+    for chan, idx in enumerate(chans):
+        with open("C{}-sum.txt".format(chan), "r") as data:
+            tab = np.array([list(map(int,line.strip("\n").split("\t"))) for line in data.readlines()])
+            tab = tab.T
+            # row 1: N(0,1,2), row 2: N(0,1,2,3)
+            sum_num = np.sum(tab[1])
+            sum_denom = np.sum(tab[0])
+            effic = sum_num / sum_denom
+            err = np.sqrt(effic*(1-effic)/sum_denom)
+            #print(sum_num, sum_denom, effic,error) 
+            print("Tube:",tubes[idx])
+            print("Efficiency\t Error")
+            print("{}\t {}".format(effic, err))
 
+                                    
 if __name__ == "__main__":
-    c2_2()
+    c2_3()
