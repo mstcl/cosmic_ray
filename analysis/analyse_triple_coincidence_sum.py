@@ -54,10 +54,10 @@ Returns the number of coincidences for the aforementioned values.
     return n_coinc, n_coinc_1
 
 #opens text files in which the efficiencies will be stored
-C0f=open("C0-eff-sum.txt","a")
-C1f=open("C1-eff-sum.txt","a")
-C2f=open("C2-eff-sum.txt","a")
-C3f=open("C3-eff-sum.txt","a")
+C0f=open("C0-sum.txt","a")
+C1f=open("C1-sum.txt","a")
+C2f=open("C2-sum.txt","a")
+C3f=open("C3-sum.txt","a")
 
 #obtains coincidence values for each permutation
 #notation is as follows: c represents channel, and is followed by the channel's number; b at the end delegates the current baseline permutation; o represents the channel whose efficiency is being measured
