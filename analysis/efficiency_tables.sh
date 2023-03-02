@@ -1,8 +1,8 @@
 #!/bin/bash
-touch C0-eff-sum.txt
-touch C1-eff-sum.txt
-touch C2-eff-sum.txt
-touch C3-eff-sum.txt
+touch C0-sum.txt
+touch C1-sum.txt
+touch C2-sum.txt
+touch C3-sum.txt
 
 for filename in $HOME/data/T1458-C1/*.dat
     do
