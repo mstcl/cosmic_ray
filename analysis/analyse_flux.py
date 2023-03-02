@@ -47,4 +47,8 @@ def calculate_counts():
 
 
 effic = np.array([0.390, 0.785, 0.932, 0.293])
-flux_mu = 3*calculate_counts()/(np.prod(effic)*518400*np.pi*(1-(np.cos(0.989))**2))
+effic_err = np.array([0.006, 0.007, 0.005, 0.005])
+theta = 0.9890
+theta_err = 0.0006
+flux_mu = 3*calculate_counts()/(np.prod(effic)*518400*np.pi*(1-(np.cos(0.989))**3))
+flux_mu_err = flux_mu*np.sqrt((effic_err/effic)**2 + (3*np.sin(theta)*theta_err*(np.cos(theta))**2)/(1-(np.cos(theta))**3)**2)
