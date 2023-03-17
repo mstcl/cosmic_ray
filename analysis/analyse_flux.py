@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # data analysis example program
 # Including some examples of how to use DataFrames from pandas
@@ -21,7 +21,7 @@ parser.add_argument("-n", "--n_max", help='max number of lines to process')
 args = parser.parse_args()
 
 ifile = open(args.in_file, 'rb')
-events= pickle.load(ifile)
+events= pickle.load(ifile, encoding='latin1')
 n_events= len(events)
 
 
@@ -42,13 +42,17 @@ def calculate_counts():
             if pulse.edge==0 and pulse.chan == int(3):
                 found3 = True
         if found0 and found1 and found2 and found3:
-            quad += 1
+            quad_count += 1
     return quad_count
 
 
 effic = np.array([0.390, 0.785, 0.932, 0.293])
 effic_err = np.array([0.006, 0.007, 0.005, 0.005])
-theta = 0.9890
-theta_err = 0.0006
-flux_mu = 3*calculate_counts()/(np.prod(effic)*518400*np.pi*(1-(np.cos(0.989))**3))
-flux_mu_err = flux_mu*np.sqrt((effic_err/effic)**2 + (3*np.sin(theta)*theta_err*(np.cos(theta))**2)/(1-(np.cos(theta))**3)**2)
+time = 518400        # seconds
+theta = 0.9890       # radians
+theta_err = 0.0006   # radians
+rate = calculate_counts()/(np.prod(effic)*time)
+flux_mu = 3*calculate_counts()/(np.prod(effic)*time*np.pi*(1-(np.cos(theta))**3))
+flux_mu_err = flux_mu*np.sqrt(np.sum((effic_err/effic)**2) + (3*np.sin(theta)*theta_err*(np.cos(theta))**2)/(1-(np.cos(theta))**3)**2)
+print(flux_mu, flux_mu_err)
+print(rate)
