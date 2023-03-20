@@ -12,24 +12,26 @@ import matplotlib.pyplot as plt
 import argparse
 from scipy.optimize import curve_fit
 
-def fun(arr,size):
+
+def fun(arr, size):
     shape = arr.shape[:-1] + (arr.shape[-1] - size + 1, size)
-    strides = arr.strides + (arr. strides[-1],)
+    strides = arr.strides + (arr.strides[-1],)
     return np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
+
 
 from event import Event, Pulse
 
-parser = argparse.ArgumentParser(description='Analyse CSV file')
+parser = argparse.ArgumentParser(description="Analyse CSV file")
 parser.add_argument("-i", "--in_file", help="input file")
-parser.add_argument("-o", "--out_file", help='output file')
-parser.add_argument("-n", "--n_max", help='max number of lines to process')
+parser.add_argument("-o", "--out_file", help="output file")
+parser.add_argument("-n", "--n_max", help="max number of lines to process")
 
 args = parser.parse_args()
 
 # open the file
-ifile = open(args.in_file, 'rb')
-events= pickle.load(ifile, encoding='latin1')
-n_events= len(events)
+ifile = open(args.in_file, "rb")
+events = pickle.load(ifile, encoding="latin1")
+n_events = len(events)
 # pulse logic
 copper_distribution = []
 size1, size2, size3 = 0, 0, 0
@@ -42,7 +44,7 @@ for event in events:
             pulse_chans.append(pulse.chan)
 
     # exclusively 0,1,2 or 1,2,3
-    if pulse_chans == [0,1,2] or pulse_chans == [1,2,3]:
+    if pulse_chans == [0, 1, 2] or pulse_chans == [1, 2, 3]:
         count = 0
         for pulse in event.pulses:
             if pulse.edge != 0:
@@ -54,18 +56,18 @@ for event in events:
             if count == 2:
                 time2 = pulse.time
             count += 1
-        #if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
-        copper_distribution.append(np.abs(time2-time1))
+        # if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
+        copper_distribution.append(np.abs(time2 - time1))
         size1 += 1
-    
+
     # exclusively 0,1,2,3 or 0,1,2,2
     length = 4
     pulse_chans = np.array(pulse_chans)
     if np.size(pulse_chans) >= length:
-        combs = [[0,1,2,3],[0,1,2,2]]
+        combs = [[0, 1, 2, 3], [0, 1, 2, 2]]
         for com in combs:
             inds = np.all(fun(pulse_chans, length) == com, axis=1)
-            res = np.mgrid[0:len(inds)][inds]
+            res = np.mgrid[0 : len(inds)][inds]
             if np.size(res) != 0:
                 for val in res:
                     count = 0
@@ -84,17 +86,17 @@ for event in events:
                         if count == val + 3:
                             time3 = pulse.time
                         count += 1
-                    #if ((time3 - time0) > 40) and ((time2 - time0) <= 40) :
-                    copper_distribution.append(np.abs(time3-time2))
+                    # if ((time3 - time0) > 40) and ((time2 - time0) <= 40) :
+                    copper_distribution.append(np.abs(time3 - time2))
                     size2 += 1
 
     # exclusively 0,1,1 or 1,2,2
     length = 3
     if np.size(pulse_chans) >= length:
-        combs = [[0,1,1],[1,2,2]]
+        combs = [[0, 1, 1], [1, 2, 2]]
         for com in combs:
             inds = np.all(fun(pulse_chans, length) == com, axis=1)
-            res = np.mgrid[0:len(inds)][inds]
+            res = np.mgrid[0 : len(inds)][inds]
             if np.size(res) != 0:
                 for val in res:
                     count = 0
@@ -113,11 +115,11 @@ for event in events:
                         if count == val + 2:
                             time2 = pulse.time
                         count += 1
-                    #if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
-                    copper_distribution.append(np.abs(time2-time1))
+                    # if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
+                    copper_distribution.append(np.abs(time2 - time1))
                     size3 += 1
 
-    #if len(pulse_chans) == 4:
+    # if len(pulse_chans) == 4:
     #    time0, time1, time2, time3 = 0, 0, 0, 0
     #    if pulse_chans == [0,1,2,3]:
     #        for pulse in event.pulses:
@@ -143,7 +145,7 @@ for event in events:
     #                    time3 = pulse.time
     #        copper_distribution.append(np.abs(time3-time2))
     # if len(pulse_chans) == 3:
-        # time0, time1, time2 = 0, 0, 0
+    # time0, time1, time2 = 0, 0, 0
 
 print(size1, size2, size3)
 print("total size", np.size(copper_distribution))
@@ -155,20 +157,41 @@ copper_distribution = copper_distribution[copper_distribution != 0]
 # plt.xlabel("index")
 # plt.show()
 
-def fit(t, A, B, tau):
-    return A + B*np.exp(-t/tau)
 
-#bins = np.linspace(40.,1000., 75)
-#bins = np.logspace(np.log(0.1),np.log(1.0),75)
-bin_heights, bin_borders, _ = plt.hist(copper_distribution, bins='auto', label='histogram')
+def fit(t, A, B, tau):
+    return A + B * np.exp(-t / tau)
+
+
+# bins = np.linspace(40.,1000., 75)
+# bins = np.logspace(np.log(0.1),np.log(1.0),75)
+bin_heights, bin_borders, _ = plt.hist(
+    copper_distribution, bins="auto", label="histogram"
+)
 bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
-popt, _ = curve_fit(fit, bin_centers, bin_heights, p0=[1.,0.,1.])
-print(popt)
+popt, pcov = curve_fit(fit, bin_centers, bin_heights, p0=[1.0, 0.0, 1.0])
 x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
-plt.plot(x_interval_for_fit, fit(x_interval_for_fit, *popt), label='fit')
+plt.plot(x_interval_for_fit, fit(x_interval_for_fit, *popt), label="fit")
 plt.legend()
-plt.yscale('log', base=np.e)
+plt.yscale("log", base=np.e)
 plt.yticks(np.array([1, np.e]),['1','2.718'])
 plt.ylabel("N")
-plt.xlabel(r'$\Delta t$')
+plt.xlabel(r"$\Delta t$")
 plt.show()
+
+y_err = np.sqrt(bin_heights)
+t_err = (bin_borders[1] - bin_borders[0]) / 2
+A, B, tau = popt
+A_err, B_err, tau_err = np.sqrt(np.diag(pcov))
+
+log_values = np.log(np.abs(bin_heights - A) / B)
+tau_err_prop = tau * np.sqrt(
+    (t_err / log_values) ** (2)
+    + (t_err * (log_values) * (-2))
+    * (
+        (y_err / (bin_heights - A)) ** (2)
+        + (A_err / (bin_heights - A)) ** (2)
+        + (B_err / B) ** (2)
+    )
+)
+
+print(tau,np.mean(tau_err_prop + tau_err))
