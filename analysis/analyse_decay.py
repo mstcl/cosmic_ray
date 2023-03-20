@@ -10,6 +10,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+from scipy.optimize import curve_fit
 
 def fun(arr,size):
     shape = arr.shape[:-1] + (arr.shape[-1] - size + 1, size)
@@ -53,7 +54,7 @@ for event in events:
             if count == 2:
                 time2 = pulse.time
             count += 1
-        # if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
+        #if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
         copper_distribution.append(np.abs(time2-time1))
         size1 += 1
     
@@ -83,7 +84,7 @@ for event in events:
                         if count == val + 3:
                             time3 = pulse.time
                         count += 1
-                    # if ((time3 - time0) > 40) and ((time2 - time0) <= 40) :
+                    #if ((time3 - time0) > 40) and ((time2 - time0) <= 40) :
                     copper_distribution.append(np.abs(time3-time2))
                     size2 += 1
 
@@ -112,7 +113,7 @@ for event in events:
                         if count == val + 2:
                             time2 = pulse.time
                         count += 1
-                    # if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
+                    #if ((time2 - time0) > 40) and ((time1 - time0) <= 40):
                     copper_distribution.append(np.abs(time2-time1))
                     size3 += 1
 
@@ -149,14 +150,25 @@ print("total size", np.size(copper_distribution))
 print("total events", event_ct)
 copper_distribution = np.array(copper_distribution)
 copper_distribution = copper_distribution[copper_distribution != 0]
-plt.scatter(np.arange(0,np.size(copper_distribution),1), copper_distribution, color='r')
-plt.ylabel("time difference (muon stopped - electron hit) (ns)")
-plt.xlabel("index")
-plt.show()
+# plt.scatter(np.arange(0,np.size(copper_distribution),1), copper_distribution, color='r')
+# plt.ylabel("time difference (muon stopped - electron hit) (ns)")
+# plt.xlabel("index")
+# plt.show()
 
-bins = np.linspace(0.,1000., 75)
-plt.hist(copper_distribution, bins)
-plt.yscale('log')
+def fit(t, A, B, tau):
+    return A + B*np.exp(-t/tau)
+
+#bins = np.linspace(40.,1000., 75)
+#bins = np.logspace(np.log(0.1),np.log(1.0),75)
+bin_heights, bin_borders, _ = plt.hist(copper_distribution, bins='auto', label='histogram')
+bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
+popt, _ = curve_fit(fit, bin_centers, bin_heights, p0=[1.,0.,1.])
+print(popt)
+x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
+plt.plot(x_interval_for_fit, fit(x_interval_for_fit, *popt), label='fit')
+plt.legend()
+plt.yscale('log', base=np.e)
+plt.yticks(np.array([1, np.e]),['1','2.718'])
 plt.ylabel("N")
 plt.xlabel(r'$\Delta t$')
 plt.show()

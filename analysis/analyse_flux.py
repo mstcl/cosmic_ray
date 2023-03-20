@@ -51,8 +51,8 @@ effic_err = np.array([0.006, 0.007, 0.005, 0.005])
 time = 518400        # seconds
 theta = 0.9890       # radians
 theta_err = 0.0006   # radians
-rate = calculate_counts()/(np.prod(effic)*time)
+rate_no_eff = calculate_counts()/time
 flux_mu = 3*calculate_counts()/(np.prod(effic)*time*np.pi*(1-(np.cos(theta))**3))
 flux_mu_err = flux_mu*np.sqrt(np.sum((effic_err/effic)**2) + (3*np.sin(theta)*theta_err*(np.cos(theta))**2)/(1-(np.cos(theta))**3)**2)
 print(flux_mu, flux_mu_err)
-print(rate)
+print(rate_no_eff)
