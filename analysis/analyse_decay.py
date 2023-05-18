@@ -74,7 +74,7 @@ for event in events:
                     for pulse in event.pulses:
                         if pulse.edge != 0:
                             continue
-                        if count == 0:
+                        if count == val:
                             time0 = pulse.time
                         if count < val:
                             count += 1
@@ -103,7 +103,7 @@ for event in events:
                     for pulse in event.pulses:
                         if pulse.edge != 0:
                             continue
-                        if count == 0:
+                        if count == val:
                             time0 = pulse.time
                         if count < val:
                             count += 1
@@ -152,7 +152,9 @@ print("total size", np.size(copper_distribution))
 print("total events", event_ct)
 copper_distribution = np.array(copper_distribution)
 copper_distribution = copper_distribution[copper_distribution != 0]
-# plt.scatter(np.arange(0,np.size(copper_distribution),1), copper_distribution, color='r')
+# plt.scatter(
+    # np.arange(0, np.size(copper_distribution), 1), copper_distribution, color="r"
+# )
 # plt.ylabel("time difference (muon stopped - electron hit) (ns)")
 # plt.xlabel("index")
 # plt.show()
@@ -162,22 +164,30 @@ def fit(t, A, B, tau):
     return A + B * np.exp(-t / tau)
 
 
-# bins = np.linspace(40.,1000., 75)
+# nums = np.linspace(300, 1600, 20, dtype=np.int_)
+# # nums2 = np.linspace(1800,2100,20, dtype=np.int_)
+# taus = np.zeros_like(nums, dtype=np.float_)
+# tau_errors = np.zeros_like(nums, dtype=np.float_)
+# bin_widths = np.zeros_like(nums, dtype=np.float_)
+# for idx, val in enumerate(nums):
+bins = np.linspace(2.,1000., 500)
+# print(val)
 # bins = np.logspace(np.log(0.1),np.log(1.0),75)
 bin_heights, bin_borders, _ = plt.hist(
-    copper_distribution, bins="auto", label="histogram"
+    copper_distribution, bins=bins, label="histogram"
 )
 bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
 popt, pcov = curve_fit(fit, bin_centers, bin_heights, p0=[1.0, 0.0, 1.0])
 x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
 plt.plot(x_interval_for_fit, fit(x_interval_for_fit, *popt), label="fit")
 plt.legend()
-plt.yscale("log", base=np.e)
-plt.yticks(np.array([1, np.e]),['1','2.718'])
+# plt.yscale("log", base=np.e)
+# plt.yticks(np.array([1, np.e, 2*np.e]),['1','2.718'])
 plt.ylabel("N")
 plt.xlabel(r"$\Delta t$")
 plt.show()
 
+# bin_widths[idx] = (bin_borders[1] - bin_borders[0])
 y_err = np.sqrt(bin_heights)
 t_err = (bin_borders[1] - bin_borders[0]) / 2
 A, B, tau = popt
@@ -193,5 +203,17 @@ tau_err_prop = tau * np.sqrt(
         + (B_err / B) ** (2)
     )
 )
+tau_err_total = np.mean(tau_err_prop + tau_err)
+# taus[idx] = tau
+# tau_errors[idx] = tau_err_total
 
 print(tau,np.mean(tau_err_prop + tau_err))
+print(np.size(bin_heights))
+# plt.cla()
+# plt.clf()
+# plt.close()
+# plt.errorbar(nums, taus, yerr=tau_errors,capsize=1.0, marker='x', ls='', color="k")
+# # plt.scatter(nums,bin_widths)
+# plt.xlabel("Bin width (ns)")
+# plt.ylabel(r"$\tau$ (ns)")
+# plt.show()
